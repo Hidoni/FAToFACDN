@@ -160,7 +160,8 @@ for comment in subreddit.stream.comments():
                     else:
                         logger.info("They already provided the source.")
         for x in range(0, len(FALinks)):
-            reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | [Imgur Mirror]({3})\n\n ^Tags: ".format(CDNLinks[x], name[x], (', '.join(['%s']*len(artist[x])) % tuple(artist[x])), imgurMirror.uploadImage(CDNLinks[x],name[x]))
+            try:reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | [Imgur Mirror]({3})\n\n ^Tags: ".format(CDNLinks[x], name[x], (', '.join(['%s']*len(artist[x])) % tuple(artist[x])), imgurMirror.uploadImage(CDNLinks[x],name[x]))
+            except: continue
             if len(keywords[x]) == 0:
                 reply += "^None"
             else:
