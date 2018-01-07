@@ -55,7 +55,8 @@ def getFACDNLink(FALink):
         for a in data.find_all('a'): # Get all a hrefs
             list.append(a.contents[0]) # Append their content, Basically the keyword
     keywords.append(list) # Append the list of the keywords to the entire list
-    link = part["data-fullview-src"] # Store the link in a variable
+    try: link = part["data-fullview-src"] # Store the link in a variable
+    except TypeError: return "Can't mirror"
     imgname = part["alt"] # FA uses the alt tag to store the image name in case the image fails to load, so we'll put that in it's own variable
     art = soup.findAll('a',href=re.compile("^/user/")) # Find all the a href tags that lead to a users page
     art = art[1] # Get the second one, since the first one is the bot's username
@@ -128,6 +129,9 @@ for comment in subreddit.stream.comments():
                     else:
                         FALink = "https://www." + part
                     FACDNLink = getFACDNLink(FALink)
+                    if FACDNLink == "Can't mirror":
+                        logger.info("It's a swf or webm, Can't mirror it!")
+                        continue
                     source = sourceExist(FACDNLink[8:], body)
                     if not source:
                         logger.info("Adding {0} to FALinks and {1} to CDNLinks".format(FALink, FACDNLink))

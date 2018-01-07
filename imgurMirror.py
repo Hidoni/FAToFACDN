@@ -1,7 +1,9 @@
 from imgurpython import ImgurClient
+import json
 
-clientid = "0209c87fabd7f2e"
-clientsecret = "c93c3b0c06b062a4cf2d7dff1035d8d399c32afb"
+creds = json.load(open("imgur.json"))
+clientid = creds["clientid"]
+clientsecret = creds["clientsecret"]
 
 client = ImgurClient(clientid, clientsecret)
 
