@@ -32,6 +32,7 @@ list = []
 artist = []
 FALinks = []
 CDNLinks = []
+rating = []
 source = False
 index = -1 # A counter to delete things from lists by indexing if necessary
 check = 0 # A counter to check PMs only after a certain amount of messages
@@ -51,7 +52,7 @@ def getFACDNLink(FALink):
     HTML = scraper.get(FALink).content # Get the page and store its HTML content to a variable
     soup = BeautifulSoup(HTML, 'html.parser')
     part = soup.find('img', {'id':'submissionImg'})
-    for data in soup.find_all('div', attrs={'id','keywords'}): # Find the div that has the keywords
+    for data in soup.find_all('div', attrs={'id':'keywords'}): # Find the div that has the keywords
         for a in data.find_all('a'): # Get all a hrefs
             list.append(a.contents[0]) # Append their content, Basically the keyword
     keywords.append(list) # Append the list of the keywords to the entire list
@@ -62,8 +63,17 @@ def getFACDNLink(FALink):
     art = art[1] # Get the second one, since the first one is the bot's username
     art = art.contents[0] # Get the contents of the tag, which is the artists name
     art = [art]
+    if soup.find("img", alt="Adult rating"):
+        rating.append("Explicit")
+    elif soup.find("img", alt="Mature rating"):
+        rating.append("Questionable")
+    elif soup.find("img", alt="General rating"):
+        rating.append("Safe")
+    else:
+        rating.append("None")
     name.append(imgname)
     artist.append(art)
+
     global index
     index += 1
     return "https://"+link[2:]
@@ -107,6 +117,7 @@ for comment in subreddit.stream.comments():
     artist = []
     FALinks = []
     CDNLinks = []
+    rating = []
     source = False
     index = -1
     check += 1
@@ -142,6 +153,7 @@ for comment in subreddit.stream.comments():
                         del artist[index]
                         del keywords[index]
                         del name[index]
+                        del rating[index]
                         index -= 1
                 else:
                     esixlink = getInfo(part)
@@ -156,11 +168,21 @@ for comment in subreddit.stream.comments():
                         artist.append(esixlink.artist_name)
                         keywords.append(esixlink.tags)
                         name.append(esixlink.image_name)
+                        if (esixlink.rating == "e"):
+                            rating.append("Explicit")
+                        elif (esixlink.rating == "q"):
+                            rating.append("Questionable")
+                        elif (esixlink.rating == "s"):
+                            rating.append("Safe")
+                        else:
+                            rating.append("None")
                         index += 1
                     else:
                         logger.info("They already provided the source.")
         for x in range(0, len(FALinks)):
-            try:reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | [Imgur Mirror]({3})\n\n ^Tags: ".format(CDNLinks[x], name[x], (', '.join(['%s']*len(artist[x])) % tuple(artist[x])), imgurMirror.uploadImage(CDNLinks[x],name[x]))
+            try:
+                reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | Rating: {4} | [Imgur Mirror]({3})\n\n ^Tags: ".format(CDNLinks[x], name[x], (', '.join(['%s']*len(artist[x])) % tuple(artist[x])), imgurMirror.uploadImage(CDNLinks[x],name[x]), rating[x])
+                sleep(1.5)
             except: continue
             if len(keywords[x]) == 0:
                 reply += "^None"
