@@ -1,13 +1,18 @@
 from imgurpython import ImgurClient
 import json
+import logging
+log = logging.getLogger(__name__)
+log.info("imgurMirror.py has set up logging successfully")
 
+# Get the credentials for the imgur account
 creds = json.load(open("imgur.json"))
 clientid = creds["clientid"]
 clientsecret = creds["clientsecret"]
 
 client = ImgurClient(clientid, clientsecret)
 
-def uploadImage(path, name):
+def mirrorImage(path, name):
+    log.info("imgurMirror.py now mirroring the following link: " + path)
     config = {
         'album': None,
         'name': name,
