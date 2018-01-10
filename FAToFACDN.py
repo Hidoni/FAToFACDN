@@ -14,7 +14,7 @@ from FALink import getFAInfo
 from imgurMirror import mirrorImage
 
 reddit = praw.Reddit('bot') # the bot's info is part of praw.ini allowing it to be added easily
-subreddit = reddit.subreddit("testingground4bots") # Makes praw only grab info related to furry_irl
+subreddit = reddit.subreddit("furry_irl") # Makes praw only grab info related to furry_irl
 
 def performCheck():
     logging.info("Reading PMs and checking comment scores")
