@@ -3,7 +3,7 @@ from praw.models import Message
 import re
 from time import sleep
 import logging
-logging.basicConfig(format="%(asctime)s %(levelname)s %(message)s", level="DEBUG", handlers=[logging.FileHandler("FAToFACDN.log")]) # Sets up logging to both console and a file
+logging.basicConfig(format="%(asctime)s %(levelname)s %(message)s", level="DEBUG", handlers=[logging.FileHandler("FAToFACDN.log", encoding="utf-8")]) # Sets up logging to both console and a file
 console = logging.StreamHandler()
 console.setLevel("INFO")
 console.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
@@ -90,7 +90,7 @@ for comment in subreddit.stream.comments():
                 if link_info == "Can't mirror":
                     logging.info("It's a swf/webm, Can't mirror")
                     continue
-            if not sourceExists(link_info.direct_link[8:], comment.body):
+            if not sourceExists(link_info.direct_link[8:], body):
                         direct_links.append(link_info.direct_link)
                         artist_names.append(link_info.artist_name)
                         image_names.append(link_info.image_name)
@@ -110,7 +110,7 @@ for comment in subreddit.stream.comments():
                 for y in tags_list[x]:
                     reply += "^" + y + " "
             reply += "\n\n"
-        reply += "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist) ^^| ^^If ^^this ^^comment ^^goes ^^below ^^-2 ^^karma, ^^It ^^will ^^be ^^deleted"
+        reply += "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist) ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted"
         if len(direct_links) > 0:
             with open("Repliedto.txt", 'a') as f:
                 f.write(comment.id + "\n")
