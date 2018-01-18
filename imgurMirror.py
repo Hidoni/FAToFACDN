@@ -1,5 +1,6 @@
 from imgurpython import ImgurClient
 import json
+from urllib.parse import quote
 import logging
 log = logging.getLogger(__name__)
 log.info("imgurMirror.py has set up logging successfully")
@@ -19,5 +20,5 @@ def mirrorImage(path, name):
         'title': name,
         'description': 'This image is a mirror of a FurAffinity Image linked on a reddit post.'
     }
-    image = client.upload_from_url(url=path, config=config, anon=False)
+    image = client.upload_from_url(url=quote(path, safe="://"), config=config, anon=False)
     return image['link']

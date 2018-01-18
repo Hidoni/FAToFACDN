@@ -12,6 +12,7 @@ logging.info("FAToFACDN.py has set up logging successfully")
 from e621Link import getESixInfo
 from FALink import getFAInfo
 from imgurMirror import mirrorImage
+from urllib.parse import quote
 
 reddit = praw.Reddit('bot') # the bot's info is part of praw.ini allowing it to be added easily
 subreddit = reddit.subreddit("furry_irl") # Makes praw only grab info related to furry_irl
@@ -47,7 +48,7 @@ def allowedToReply(comment):
                 return False
     return True
 def sourceExists(link, original):
-    if link in original:
+    if (quote(link, safe="://") in quote(original, safe="://")) or (quote(link, safe="://") in original):
         return True
     return False
 check = 0
