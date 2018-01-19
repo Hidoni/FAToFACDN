@@ -103,8 +103,11 @@ for comment in subreddit.stream.comments():
         for x in range(0, len(direct_links)):
             try:
                 reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | Rating: {4} | [Imgur Mirror]({3})\n\n ^Tags: ".format(direct_links[x], image_names[x], (', '.join(['%s']*len(artist_names[x])) % tuple(artist_names[x])), mirrorImage(direct_links[x],image_names[x]), image_ratings[x])
-                sleep(1.5)
-            except: continue
+                sleep(1)
+            except Exception as e: 
+                logging.info("Ran into the following error while trying to add another part to the reply: " + str(e))
+                del direct_links[x]
+                continue
             if len(tags_list[x]) == 0:
                 reply += "^None"
             else:
