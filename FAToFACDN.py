@@ -32,6 +32,8 @@ def performCheck():
     for botcmt in reddit.user.me().comments.new(limit=None):
         if botcmt.score < 0:
             botcmt.delete()
+            logging.info("Deleted comment with id {0}".format(botcmt.id))
+            logging.debug("Comment contents were:\n{0}]".format(botcmt.body))
 def cleanString(string):
     end = string.index(")")
     return string[:end]
@@ -47,8 +49,8 @@ def allowedToReply(comment):
             if id == comment.id+"\n":
                 return False
     return True
-def sourceExists(link, original):
-    if (quote(link, safe="://") in quote(original, safe="://")) or (quote(link, safe="://") in original):
+def sourceExists(link, original, notmodified):
+    if (quote(link, safe="://") in quote(original, safe="://")) or (quote(link, safe="://") in original) or (link in original) or (quote(link, safe="://") in quote(notmodified, safe="://")) or (quote(link, safe="://") in notmodified) or (link in notmodified):
         return True
     return False
 check = 0
@@ -91,7 +93,7 @@ for comment in subreddit.stream.comments():
                 if link_info == "Can't mirror":
                     logging.info("It's a swf/webm, Can't mirror")
                     continue
-            if not sourceExists(link_info.direct_link[8:], body):
+            if not sourceExists(link_info.direct_link[8:], body, comment.body):
                         direct_links.append(link_info.direct_link)
                         artist_names.append(link_info.artist_name)
                         image_names.append(link_info.image_name)
