@@ -49,8 +49,8 @@ def allowedToReply(comment):
             if id == comment.id+"\n":
                 return False
     return True
-def sourceExists(link, original, notmodified):
-    if (quote(link, safe="://") in quote(original, safe="://")) or (quote(link, safe="://") in original) or (link in original) or (quote(link, safe="://") in quote(notmodified, safe="://")) or (quote(link, safe="://") in notmodified) or (link in notmodified):
+def sourceExists(link, original):
+    if (quote(link, safe="://") in quote(original, safe="://")) or (quote(link, safe="://") in original) or (link in original):
         return True
     return False
 check = 0
@@ -69,7 +69,7 @@ for comment in subreddit.stream.comments():
     logging.info("Now viewing comment with id: {0}, Made by {1}".format(comment.id, comment.author.name))
     logging.debug("Comment contents are: {0}\nLink is https://www.reddit.com{1}?context=5".format(comment.body, comment.permalink))
     body = comment.body.replace("full","view") # Replace any instance of the word full with the word view, so we can parse FA links easier
-    body = body.replace("e926","e621") # Same thing as above, just for e621 links
+    body = body.replace("e926.net","e621.net") # Same thing as above, just for e621 links
     splitcmt = re.findall(r'(furaffinity.net/view/\S+)', body) # using re to find all FA and e621 links in the comment
     splitcmt += re.findall(r'(e621.net/post/show/\S+)', body)
     if allowedToReply(comment):
@@ -93,7 +93,7 @@ for comment in subreddit.stream.comments():
                 if link_info == "Can't mirror":
                     logging.info("It's a swf/webm, Can't mirror")
                     continue
-            if not sourceExists(link_info.direct_link[8:], body, comment.body):
+            if not sourceExists(link_info.direct_link[8:], body):
                         direct_links.append(link_info.direct_link)
                         artist_names.append(link_info.artist_name)
                         image_names.append(link_info.image_name)
