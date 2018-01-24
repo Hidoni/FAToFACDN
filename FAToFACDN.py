@@ -32,8 +32,8 @@ def performCheck():
     for botcmt in reddit.user.me().comments.new(limit=None):
         if botcmt.score < 0:
             botcmt.delete()
-            logging.info("Deleted comment with id {0}".format(botcmt.id))
-            logging.debug("Comment contents were:\n{0}]".format(botcmt.body))
+            logging.info("Deleted comment with id: {0}".format(botcmt.id))
+            logging.debug("Comment contents were:\n{0}".format(botcmt.body))
 def cleanString(string):
     end = string.index(")")
     return string[:end]
