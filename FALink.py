@@ -9,6 +9,7 @@ log.info("FALink.py has set up logging successfully")
 login_info = json.load(open('cookie.json'))
 scraper = cfscrape.create_scraper()
 
+
 class postData():
     def __init__(self, direct_link, artist_name, image_name, tags, rating):
         self.direct_link = "https://" + direct_link[2:]
@@ -18,16 +19,19 @@ class postData():
         self.rating = rating
         log.debug("A postData class was created with the following values: direct_link:{0}, artist_name:{1}, image_name:{2}, tags:{3}, rating:{4}".format(self.direct_link, self.artist_name, self.image_name, self.tags, self.rating))
 
+
 def getFAInfo(FALink):
     keywordList = []
     log.info("FALink.py is now handling the following link: " + FALink)
-    scraper.get("http://www.furaffinity.net")
-    scraper.cookies.update(login_info) # Update our session's cookies to log into FA
-    HTML = scraper.get(FALink).content
-    soup = BeautifulSoup(HTML, 'html.parser')
-    subImg = soup.find('img', id="submissionImg")
-    try:direct_link=subImg["data-fullview-src"]
-    except TypeError:return "Can't mirror"
+    scraper.get("http://www.furaffinity.net")  # Make a request to the landing page of FA
+    scraper.cookies.update(login_info)  # Update our session's cookies to log into FA without passing a captcha
+    HTML = scraper.get(FALink).content  # Get the HTML content of the image
+    soup = BeautifulSoup(HTML, 'html.parser')  # Parse it using BeautifulSoup 4
+    subImg = soup.find('img', id="submissionImg")  # Find the part of the page that contains the actual image
+    if soup.find('div', class_="audio-player-container"):  # If there's an audio container that means it's an audio file which means mirroring would be useless
+        return "Can't mirror"
+    try: direct_link=subImg["data-fullview-src"]
+    except TypeError: return "Can't mirror"
     for data in soup.find_all('div', id="keywords"):
         for a in data.find_all('a'):
             keywordList.append(a.contents[0])

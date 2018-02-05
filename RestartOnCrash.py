@@ -2,9 +2,9 @@
 import subprocess
 
 while True:
-    script = subprocess.Popen(['python', 'FAToFACDN.py']).wait() # Run This Code until something breaks.
+    script = subprocess.Popen(['python', 'FAToFACDN.py']).wait()  # Run This Code until something breaks.
 
-    if script != 0: # If the exit code isn't 0, which will be 100% of the time with this bot
+    if script != 0:  # If the exit code isn't 0, which will be 100% of the time with this bot
         print("Got error code " + str(script) + "...\nRestarting script...")
         continue
     else:

@@ -12,6 +12,7 @@ clientsecret = creds["clientsecret"]
 
 client = ImgurClient(clientid, clientsecret)
 
+
 def mirrorImage(path, name):
     log.info("imgurMirror.py now mirroring the following link: " + path)
     config = {
