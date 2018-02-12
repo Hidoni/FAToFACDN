@@ -31,7 +31,7 @@ def performCheck():
                     logging.info("Added user: " + message.author.name + " To Blacklist.txt")
                 message.reply("Ok, I will no longer reply to your comments.")
         message.mark_read()
-    for botcmt in reddit.user.me().comments.new(limit=None):
+    for botcmt in reddit.user.me().comments.new(limit=20):
         if botcmt.score < 0:
             botcmt.delete()
             logging.info("Deleted comment with id: {0}".format(botcmt.id))
@@ -112,13 +112,15 @@ for comment in subreddit.stream.comments():
                         index += 1
             else:
                 logging.info("Source for that link already exists.")
-        for x in range(0, len(direct_links)):
+        iterator = range(0, len(direct_links))
+        for x in iterator:
             try:
                 reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | Rating: {4} | [Imgur Mirror]({3})\n\n ^Tags: ".format(direct_links[x], image_names[x], (', '.join(['%s']*len(artist_names[x])) % tuple(artist_names[x])), mirrorImage(direct_links[x], image_names[x]), image_ratings[x])
                 sleep(1)  # Sleep for one second since if I try to have imgur mirror too many things from FA at once it gets blocked
             except Exception as e: # If the bot gets an error, Just log it and forget about it rather than going into a restart loop
                 logging.info("Ran into the following error while trying to add another part to the reply: " + str(e))
                 del direct_links[x]
+                iterator = range(0, len(direct_links))
                 continue
             if len(tags_list[x]) == 0:
                 reply += "^None"
