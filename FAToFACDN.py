@@ -112,15 +112,16 @@ for comment in subreddit.stream.comments():
                         index += 1
             else:
                 logging.info("Source for that link already exists.")
-        iterator = range(0, len(direct_links))
-        for x in iterator:
+        iterator = len(direct_links)
+        x = 0
+        while x < iterator:
             try:
                 reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | Rating: {4} | [Imgur Mirror]({3})\n\n ^Tags: ".format(direct_links[x], image_names[x], (', '.join(['%s']*len(artist_names[x])) % tuple(artist_names[x])), mirrorImage(direct_links[x], image_names[x]), image_ratings[x])
                 sleep(1)  # Sleep for one second since if I try to have imgur mirror too many things from FA at once it gets blocked
             except Exception as e: # If the bot gets an error, Just log it and forget about it rather than going into a restart loop
                 logging.info("Ran into the following error while trying to add another part to the reply: " + str(e))
                 del direct_links[x]
-                iterator = range(0, len(direct_links))
+                iterator -= 1
                 continue
             if len(tags_list[x]) == 0:
                 reply += "^None"
@@ -128,6 +129,7 @@ for comment in subreddit.stream.comments():
                 for y in tags_list[x]:
                     reply += "^" + y + " "
             reply += "\n\n"
+            x += 1
         reply += "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist) ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted"
         if len(direct_links) > 0:
             with open("Repliedto.txt", 'a') as f:
