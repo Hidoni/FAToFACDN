@@ -62,6 +62,16 @@ def sourceExists(link, original):
         return True
     return False
 
+def tagFormatter(tags):
+    formatted = []
+    for tag in tags:
+        word = ""
+        for character in tag:
+            if character in ['*', '~', '_', '^', '\\', '(', ')', '[', ']', '>']:
+                character = '\\' + character
+            word += character
+        formatted.append(word)
+    return "^" + ' ^'.join(formatted)
 
 check = 0
 for comment in subreddit.stream.comments():
@@ -126,8 +136,7 @@ for comment in subreddit.stream.comments():
             if len(tags_list[x]) == 0:
                 reply += "^None"
             else:
-                for y in tags_list[x]:
-                    reply += "^" + y + " "
+                reply += tagFormatter(tags_list[x])
             reply += "\n\n"
             x += 1
         reply += "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist) ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted"
