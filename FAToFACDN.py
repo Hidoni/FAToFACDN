@@ -75,7 +75,10 @@ def tagFormatter(tags):
 
 check = 0
 for comment in subreddit.stream.comments():
-    reply = "You've linked images from e621/FurAffinity without direct links, Here are those links!\n\n"
+    if "You've linked images from e621/FurAffinity without direct links".lower() in comment.body.lower():
+        reply = "Hey, That's my line!\n\n"
+    else:
+        reply = "You've linked images from e621/FurAffinity without direct links, Here are those links!\n\n"
     direct_links = []
     artist_names = []
     image_names = []
