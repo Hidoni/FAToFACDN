@@ -93,8 +93,8 @@ for comment in subreddit.stream.comments():
     logging.debug("Comment contents are: {0}\nLink is https://www.reddit.com{1}?context=5".format(comment.body, comment.permalink))
     body = comment.body.replace("full", "view")  # Replace any instance of the word full with the word view, so we can parse FA links easier
     body = body.replace("e926.net", "e621.net")  # Same thing as above, just for e621 links
-    splitcmt = re.findall(r'(furaffinity.net/view/\S+)', body)  # using a regular expression to find all FA and e621 links in the comment
-    splitcmt += re.findall(r'(e621.net/post/show/\S+)', body)
+    splitcmt = re.findall(r"(furaffinity\.net/view/\d+\S+)", body)  # using a regular expression to find all FA and e621 links in the comment
+    splitcmt += re.findall(r"(e621\.net/post/show/\d+\S+)", body)
     if allowedToReply(comment):
         for part in splitcmt:
             logging.debug("Now parsing the following part: {0}, from comment: {1}".format(part, comment.id))
