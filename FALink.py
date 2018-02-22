@@ -11,12 +11,13 @@ scraper = cfscrape.create_scraper()
 
 
 class postData():
-    def __init__(self, direct_link, artist_name, image_name, tags, rating):
+    def __init__(self, direct_link, artist_name, image_name, tags, rating, sample_url):
         self.direct_link = "https://" + direct_link[2:]
         self.artist_name = artist_name
         self.image_name = image_name
         self.tags = tags[0:30]
         self.rating = rating
+        self.sample_url = sample_url[2:]
         log.debug("A postData class was created with the following values: direct_link:{0}, artist_name:{1}, image_name:{2}, tags:{3}, rating:{4}".format(self.direct_link, self.artist_name, self.image_name, self.tags, self.rating))
 
 
@@ -47,4 +48,5 @@ def getFAInfo(FALink):
         rating = "Safe"
     else:
         rating = "Unknown"
-    return postData(direct_link, artist_name, imame_name, keywordList, rating)
+    sample_url = subImg["data-preview-src"]
+    return postData(direct_link, artist_name, imame_name, keywordList, rating, sample_url)

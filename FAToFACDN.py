@@ -84,6 +84,7 @@ for comment in subreddit.stream.comments():
     image_names = []
     tags_list = []
     image_ratings = []
+    sample_urls = []
     index = -1
     check += 1
     if check == 10:
@@ -122,11 +123,16 @@ for comment in subreddit.stream.comments():
                         image_names.append(link_info.image_name)
                         tags_list.append(link_info.tags)
                         image_ratings.append(link_info.rating)
+                        sample_urls.append(link_info.sample_url)
                         index += 1
             else:
                 logging.info("Source for that link already exists.")
         iterator = len(direct_links)
         x = 0
+        for sample_url in sample_urls:
+            if sourceExists(sample_url, body):
+                reply += "I've noticed you tried to add a direct link to your post, But you linked a lower resolution one, Please look at [this guide!](https://imgur.com/a/RpklH) to see how to properly add direct links to your post! \n\n"
+                break
         while x < iterator:
             try:
                 reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | Rating: {4} | [Imgur Mirror]({3})\n\n ^Tags: ".format(direct_links[x], image_names[x], (', '.join(['%s']*len(artist_names[x])) % tuple(artist_names[x])), mirrorImage(direct_links[x], image_names[x]), image_ratings[x])
@@ -142,7 +148,7 @@ for comment in subreddit.stream.comments():
                 reply += tagFormatter(tags_list[x])
             reply += "\n\n"
             x += 1
-        reply += "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist) ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted"
+        reply += "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist) ^^| [^^How ^^to ^^properly ^^give ^^direct ^^links](https://imgur.com/a/RpklH) ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted"
         if len(direct_links) > 0:
             with open("Repliedto.txt", 'a') as f:
                 f.write(comment.id + "\n")
