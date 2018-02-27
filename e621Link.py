@@ -1,4 +1,4 @@
-import esto
+from Py621 import getById
 import re
 import logging
 log = logging.getLogger(__name__)
@@ -25,14 +25,14 @@ class postData():
 
 def isolateID(esixlink):
     esixid = re.findall('\d+', esixlink)
-    return esixid[1] # This returns the second value because the first one would be the 621 in e621.net
+    return esixid[1]  # This returns the second value because the first one would be the 621 in e621.net
 
 
 def getESixInfo(esixlink):
     log.info("e621Link.py is now handling the following link: " + esixlink)
     esixid = isolateID(esixlink)
-    post = esto.resolveid(esixid)
-    if post.file_ext == "swf" or post.file_ext ==  "webm":
+    post = getById(esixid)
+    if post.file_ext == "swf" or post.file_ext == "webm":
         return "Can't mirror"  # Since imgur can't mirror swf or webm, and linking either of these would not allow it to be viewed, this string is returned which causes the bot to skip to the next link
-    try:return postData(post.file_url, post.artists, post.tags, post.rating, post.sample_url)
-    except:return "Can't mirror" # If something has gone wrong, Instead of crashing just ignore this link.
+    try: return postData(post.file_url, post.artists, post.tags, post.rating, post.sample_url)
+    except: return "Can't mirror"  # If something has gone wrong, Instead of crashing just ignore this link.
