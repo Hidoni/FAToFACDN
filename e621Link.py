@@ -32,7 +32,11 @@ def getESixInfo(esixlink):
     log.info("e621Link.py is now handling the following link: " + esixlink)
     esixid = isolateID(esixlink)
     post = getById(esixid)
+    if post == None: # This means that we tried to resolve a deleted post.
+        return "Can't mirror"
     if post.file_ext == "swf" or post.file_ext == "webm":
         return "Can't mirror"  # Since imgur can't mirror swf or webm, and linking either of these would not allow it to be viewed, this string is returned which causes the bot to skip to the next link
-    try: return postData(post.file_url, post.artists, post.tags, post.rating, post.sample_url)
-    except: return "Can't mirror"  # If something has gone wrong, Instead of crashing just ignore this link.
+    try: return postData(post.file_url, post.artist, post.tags, post.rating, post.sample_url)
+    except Exception as e:
+        log.info("Got the following error while trying to mirror: " + str(e))
+        return "Can't mirror"  # If something has gone wrong, Instead of crashing just ignore this link.
