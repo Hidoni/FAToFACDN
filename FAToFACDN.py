@@ -1,49 +1,43 @@
 import praw
 from praw.models import Message
 import re
-from time import sleep
-from urllib.parse import quote
 import logging
+from urllib.parse import quote
+import os
 logging.basicConfig(format="%(asctime)s %(levelname)s %(message)s", level="DEBUG", handlers=[logging.FileHandler("FAToFACDN.log", encoding="utf-8")])  # Sets up logging to both console and a file
 console = logging.StreamHandler()
 console.setLevel("INFO")
 console.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
 logging.getLogger("").addHandler(console)
 logging.info("FAToFACDN.py has set up logging successfully")
-from e621Link import getESixInfo
-from FALink import getFAInfo
-from imgurMirror import mirrorImage
+from e621 import get_e621_info
+from FurAffinity import get_furaffinity_info
+from Inkbunny import get_inkbunny_info
+from imgur import mirror_image
 
+reddit = praw.Reddit('bot')
+subreddit = reddit.subreddit('furry_irl')
 
-reddit = praw.Reddit('bot')  # the bot's info is part of praw.ini allowing it to be added easily
-subreddit = reddit.subreddit("furry_irl")  # Makes praw only grab info related to furry_irl
-
-
-def performCheck():
-    logging.info("Reading PMs and checking comment scores")
-    for message in reddit.inbox.unread(limit=None):
+def perform_check():
+    global check
+    logging.info("Checking PMs and Comment Scores")
+    for message in reddit.inbox.unread():
         if isinstance(message, Message):
-            logging.info("Found PM From user: " + message.author.name)
             if message.subject == "Blacklist":
-                logging.info("They want to be blacklisted to the bot, adding their name to the list...")
+                logging.info("Found a blacklist request from {0}".format(message.author.name))
                 with open("Blacklist.txt", 'a') as f:
                     f.write(message.author.name + "\n")
-                    logging.info("Added user: " + message.author.name + " To Blacklist.txt")
+                    logging.debug("Added user: " + message.author.name + " To Blacklist.txt")
                 message.reply("Ok, I will no longer reply to your comments.")
         message.mark_read()
-    for botcmt in reddit.user.me().comments.new(limit=20):
-        if botcmt.score < 0:
-            botcmt.delete()
-            logging.info("Deleted comment with id: {0}".format(botcmt.id))
-            logging.debug("Comment contents were:\n{0}".format(botcmt.body))
+    for bot_comment in reddit.user.me().comments.new(limit=20):
+        if bot_comment.score < 0:
+            bot_comment.delete()
+            logging.info("Found a comment with a score below 0, It has been deleted")
+            logging.debug("ID was: {0}, Comment Contents were:\n{1}".format(bot_comment.id, bot_comment.body))
+    check = 0
 
-
-def cleanString(string):
-    end = string.index(")")
-    return string[:end]
-
-
-def allowedToReply(comment):
+def allowed_to_reply(comment):
     with open("Blacklist.txt", 'r') as f:
         file = f.readlines()
         for name in file:
@@ -56,11 +50,8 @@ def allowedToReply(comment):
                 return False
     return True
 
-
 def sourceExists(link, original):
-    if (quote(link, safe="://") in quote(original, safe="://")) or (quote(link, safe="://") in original) or (link in original):  # Just to be safe...
-        return True
-    return False
+    return (quote(link, safe="://") in quote(original, safe="://")) or (quote(link, safe="://") in original) or (link in original)  # Just to be safe...
 
 def tagFormatter(tags):
     formatted = []
@@ -75,86 +66,112 @@ def tagFormatter(tags):
 
 check = 0
 for comment in subreddit.stream.comments():
-    if "You've linked images from e621/FurAffinity without direct links".lower() in comment.body.lower():
+    check += 1
+    if "You've linked images from e621/FurAffinity/Inkbunny without direct links".lower() in comment.body.lower():
         reply = "Hey, That's my line!\n\n"
     else:
-        reply = "You've linked images from e621/FurAffinity without direct links, Here are those links!\n\n"
-    direct_links = []
-    artist_names = []
-    image_names = []
-    tags_list = []
-    image_ratings = []
+        reply = "You've linked images from e621/FurAffinity/Inkbunny without direct links, Here are those links!\n\n"
+    posts = []
     sample_urls = []
-    index = -1
-    check += 1
     if check == 10:
-        performCheck()
-        check = 0
-    logging.info("Now viewing comment with id: {0}, Made by {1}".format(comment.id, comment.author.name))
-    logging.debug("Comment contents are: {0}\nLink is https://www.reddit.com{1}?context=5".format(comment.body, comment.permalink))
-    body = comment.body.replace("full", "view")  # Replace any instance of the word full with the word view, so we can parse FA links easier
-    body = body.replace("e926.net", "e621.net")  # Same thing as above, just for e621 links
-    splitcmt = re.findall(r"(furaffinity\.net/view/\d+\S+)", body)  # using a regular expression to find all FA and e621 links in the comment
-    splitcmt += re.findall(r"(e621\.net/post/show/\d+\S+)", body)
-    if allowedToReply(comment):
-        for part in splitcmt:
-            logging.debug("Now parsing the following part: {0}, from comment: {1}".format(part, comment.id))
-            if "furaffinity.net/view/" in part:  # If it's a furaffinity link.
-                if ")" in part:
-                    FALink = "https://www." + cleanString(part)
-                else:
-                    FALink = "https://www." + part
-                link_info = getFAInfo(FALink)
+        perform_check()
+    logging.info("Checking comment with ID: {0}, By: {1}".format(comment.id, comment.author.name))
+    logging.debug("Comment contents are: {0}\nLink is: {1}".format(comment.body, comment.permalink))
+    comment_body = comment.body.replace("e926.net", "e621.net")
+    comment_body = comment_body.replace("full", "view")
+    urls_to_mirror = re.findall(r"(furaffinity\.net/view/\d+)", comment_body)  # Match all FurAffinity urls
+    urls_to_mirror += re.findall(r"(e621\.net/post/show/\d+)", comment_body)  # Match all e621 urls
+    urls_to_mirror += re.findall(r"(inkbunny\.net/s/\d+)", comment_body)  # Match all inkbunny urls
+    if allowed_to_reply(comment):
+        for url in urls_to_mirror:
+            logging.debug("Now parsing the following part of the comment: {0}".format(url))
+            if "furaffinity.net" in url:
+                link_info = get_furaffinity_info("https://www." + url)
                 if link_info == "Can't mirror":
                     logging.info("It's a swf/webm/audio file, Can't mirror")
                     continue
-            else:  # If it's an e621 link
-                if ")" in part:
-                    esixlink = "https://www." + cleanString(part)
-                else:
-                    esixlink = "https://www." + part
-                link_info = getESixInfo(esixlink)
+            elif "e621.net" in url:
+                link_info = get_e621_info("https://www." + url)
                 if link_info == "Can't mirror":
-                    logging.info("It's a swf/webm, Can't mirror")
+                    logging.info("It's a swf/webm/audio file, Can't mirror")
                     continue
-            if not sourceExists(link_info.direct_link[8:], body):
-                        direct_links.append(link_info.direct_link)
-                        artist_names.append(link_info.artist_name)
-                        image_names.append(link_info.image_name)
-                        tags_list.append(link_info.tags)
-                        image_ratings.append(link_info.rating)
-                        sample_urls.append(link_info.sample_url)
-                        index += 1
             else:
-                logging.info("Source for that link already exists.")
-        iterator = len(direct_links)
-        x = 0
+                link_info = get_inkbunny_info("https://www." + url)
+                if link_info == "Can't mirror":
+                    logging.info("It's a swf/webm/audio file, Can't mirror")
+                    continue
+            if not isinstance(link_info, list):
+                if not sourceExists(link_info.direct_link, comment_body):
+                    posts.append(link_info)
+                    sample_urls.append(link_info.sample_url)
+                else:
+                    logging.info("Source for that link already exists.")
+            else:
+                posts.append(link_info)
         for sample_url in sample_urls:
-            if sourceExists(sample_url, body):
-                reply += "I've noticed you tried to add a direct link to your post, But you linked a lower resolution one, Please look at [this guide!](https://imgur.com/a/RpklH) to see how to properly add direct links to your post! \n\n"
-                break
-        while x < iterator:
-            try:
-                reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | Rating: {4} | [Imgur Mirror]({3})\n\n ^Tags: ".format(direct_links[x], image_names[x], (', '.join(['%s']*len(artist_names[x])) % tuple(artist_names[x])), mirrorImage(direct_links[x], image_names[x]), image_ratings[x])
-                sleep(1)  # Sleep for one second since if I try to have imgur mirror too many things from FA at once it gets blocked
-            except Exception as e: # If the bot gets an error, Just log it and forget about it rather than going into a restart loop
-                logging.info("Ran into the following error while trying to add another part to the reply: " + str(e))
-                del direct_links[x]
-                iterator -= 1
-                continue
-            if len(tags_list[x]) == 0:
-                reply += "^None"
+            if sample_url is not None:
+                if sourceExists(sample_url, comment_body):
+                    reply += "I've noticed you tried to add a direct link to your post, But you linked a lower resolution one, Please look at [this guide!](https://imgur.com/a/RpklH) to see how to properly add direct links to your post! \n\n"
+                    break
+        iterator = len(posts)
+        index = 0
+        while index < iterator:
+            if not isinstance(posts[index], list):
+                post = posts[index]
+                try:
+                    if post.download_file("images/image_{0}".format(index)):
+                        reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | Rating: {4} | [Imgur Mirror]({3})\n\n ^Tags: ".format(post.direct_link, post.image_name, (', '.join(['%s']*len(post.artist_name)) % tuple(post.artist_name)), mirror_image("images/image_{0}".format(str(index) + '.' + post.direct_link.split('.')[-1]), post.image_name), post.rating)
+                        try: os.remove("images/image_{0}".format(str(index) + '.' + post.direct_link.split('.')[-1]))
+                        except: pass
+                    else:
+                        logging.info("Failed to upload image...")
+                        del posts[index]
+                        iterator -= 1
+                        try: os.remove("images/image_{0}".format(str(index) + '.' + post.direct_link.split('.')[-1]))
+                        except: pass
+                        continue
+                except Exception as e:
+                    logging.info("Ran into the following error while trying to add another part to the reply: {0}".format(str(e)))
+                    del posts[index]
+                    iterator -= 1
+                    try: os.remove("images/image_{0}".format(str(index) + '.' + post.direct_link.split('.')[-1]))
+                    except: pass
+                    continue
+                if len(post.tags) == 0:
+                    reply += "^None"
+                else:
+                    reply += tagFormatter(post.tags)
+                reply += "\n\n"
+                index += 1
             else:
-                reply += tagFormatter(tags_list[x])
-            reply += "\n\n"
-            x += 1
-        reply += "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist) ^^| [^^How ^^to ^^properly ^^give ^^direct ^^links](https://imgur.com/a/RpklH) ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted"
-        if len(direct_links) > 0:
+                post = posts[index]
+                number = 0
+                direct_links = []
+                images = []
+                for file in post:
+                    if file.download_file("images/image_{0}_{1}".format(index, number)):
+                        try:
+                            images.append(mirror_image("images/image_{0}_{1}".format(index, str(number) + '.' + file.direct_link.split('.')[-1]), file.image_name))
+                            direct_links.append(file.direct_link)
+                            os.remove("images/image_{0}_{1}".format(index, str(number) + '.' + file.direct_link.split('.')[-1]))
+                            number += 1
+                        except:
+                            os.remove("images/image_{0}_{1}".format(index, str(number) + '.' + file.direct_link.split('.')[-1]))
+                links = ["[Link {0}]({1})".format(list(range(len(direct_links)))[x] + 1, direct_links[x]) for x in range(len(direct_links))]
+                image_links = ["[Mirror {0}]({1})".format(list(range(len(images)))[x] + 1, images[x]) for x in range(len(images))]
+                reply += "{0}| Image Name: {1} | Artist: {2} | Rating: {4} | {3}\n\n ^Tags: ".format(', '.join(links), post[0].image_name, (', '.join(['%s']*len(post[0].artist_name)) % tuple(post[0].artist_name)), ', '.join(image_links), post[0].rating)
+                if len(post[0].tags) == 0:
+                    reply += "^None"
+                else:
+                    reply += tagFormatter(post[0].tags)
+                reply += "\n\n"
+                index += 1
+        reply += "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist&message=Hi,%20I%20want%20to%20be%20blacklisted) ^^| [^^How ^^to ^^properly ^^give ^^direct ^^links](https://imgur.com/a/RpklH) ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted"
+        if len(posts) > 0:
             with open("Repliedto.txt", 'a') as f:
                 f.write(comment.id + "\n")
             comment.reply(reply)
             logging.info("Replied to comment with id: " + comment.id)
             logging.debug("Reply message was:\n"+reply)
-            sleep(2)
     else:
         logging.info("I've either already replied to this comment or the user wanted to be blacklisted, So I won't be replying.")
