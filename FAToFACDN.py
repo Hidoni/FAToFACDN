@@ -16,7 +16,8 @@ from Inkbunny import get_inkbunny_info
 from imgur import mirror_image
 
 reddit = praw.Reddit('bot')
-subreddit = reddit.subreddit('furry_irl')
+subreddit = reddit.subreddit('u_fatofacdn')
+
 
 def perform_check():
     global check
@@ -37,6 +38,7 @@ def perform_check():
             logging.debug("ID was: {0}, Comment Contents were:\n{1}".format(bot_comment.id, bot_comment.body))
     check = 0
 
+
 def allowed_to_reply(comment):
     with open("Blacklist.txt", 'r') as f:
         file = f.readlines()
@@ -50,10 +52,12 @@ def allowed_to_reply(comment):
                 return False
     return True
 
-def sourceExists(link, original):
+
+def souurce_exists(link, original):
     return (quote(link, safe="://") in quote(original, safe="://")) or (quote(link, safe="://") in original) or (link in original)  # Just to be safe...
 
-def tagFormatter(tags):
+
+def tag_formatter(tags):
     formatted = []
     for tag in tags:
         word = ""
@@ -63,6 +67,7 @@ def tagFormatter(tags):
             word += character
         formatted.append(word)
     return "^" + ' ^'.join(formatted)
+
 
 check = 0
 for comment in subreddit.stream.comments():
@@ -101,7 +106,7 @@ for comment in subreddit.stream.comments():
                     logging.info("It's a swf/webm/audio file, Can't mirror")
                     continue
             if not isinstance(link_info, list):
-                if not sourceExists(link_info.direct_link, comment_body):
+                if not souurce_exists(link_info.direct_link[8:], comment_body):
                     posts.append(link_info)
                     sample_urls.append(link_info.sample_url)
                 else:
@@ -110,7 +115,7 @@ for comment in subreddit.stream.comments():
                 posts.append(link_info)
         for sample_url in sample_urls:
             if sample_url is not None:
-                if sourceExists(sample_url, comment_body):
+                if souurce_exists(sample_url[8:], comment_body):
                     reply += "I've noticed you tried to add a direct link to your post, But you linked a lower resolution one, Please look at [this guide!](https://imgur.com/a/RpklH) to see how to properly add direct links to your post! \n\n"
                     break
         iterator = len(posts)
@@ -140,7 +145,7 @@ for comment in subreddit.stream.comments():
                 if len(post.tags) == 0:
                     reply += "^None"
                 else:
-                    reply += tagFormatter(post.tags)
+                    reply += tag_formatter(post.tags)
                 reply += "\n\n"
                 index += 1
             else:
@@ -163,7 +168,7 @@ for comment in subreddit.stream.comments():
                 if len(post[0].tags) == 0:
                     reply += "^None"
                 else:
-                    reply += tagFormatter(post[0].tags)
+                    reply += tag_formatter(post[0].tags)
                 reply += "\n\n"
                 index += 1
         reply += "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist&message=Hi,%20I%20want%20to%20be%20blacklisted) ^^| [^^How ^^to ^^properly ^^give ^^direct ^^links](https://imgur.com/a/RpklH) ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted"
