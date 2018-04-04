@@ -20,8 +20,9 @@ def mirror_image(path, name):
         'description': 'This image is a mirror of a an image linked on a furry_irl post.'
     }
     image = None
-    while image is None: # This should help with random connection drops
+    attempts = 0
+    while image is None and attempts < 10: # This should help with random connection drops
         try: image = client.upload_from_path(path=path, config=config, anon=False)
-        except: pass
+        except: attempts += 1
     log.info("Mirrored the image successfully, Link is {0}".format(image['link']))
     return image['link']

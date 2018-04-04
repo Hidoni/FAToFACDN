@@ -44,6 +44,8 @@ def get_furaffinity_info(furaffinity_link):
     submission_img = soup.find('img', id="submissionImg")  # Find the part of the page that contains the actual image
     if soup.find('div', class_="audio-player-container"):  # If there's an audio container that means it's an audio file which means mirroring would be useless
         return "Can't mirror"
+    if soup.find('div', class_="font-size-panel"):  # This div only appears on story posts.
+        return "Can't mirror"
     try: direct_link = submission_img["data-fullview-src"]
     except TypeError: return "Can't mirror"
     for data in soup.find_all('div', id="keywords"):
