@@ -125,6 +125,7 @@ for comment in subreddit.stream.comments():
                 post = posts[index]
                 try:
                     if post.download_file("images/image_{0}".format(index)):
+                        logging.debug("Succesfully downloaded image_{0}, File Size is: {1}KB".format(index, int(os.path.getsize("images/image_{0}.{1}".format(index, post.direct_link.split('.')[-1]))) / 1000))
                         reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | Rating: {4} | [Imgur Mirror]({3})\n\n ^Tags: ".format(post.direct_link, post.image_name, (', '.join(['%s']*len(post.artist_name)) % tuple(post.artist_name)), mirror_image("images/image_{0}".format(str(index) + '.' + post.direct_link.split('.')[-1]), post.image_name), post.rating)
                         try: os.remove("images/image_{0}".format(str(index) + '.' + post.direct_link.split('.')[-1]))
                         except: pass
@@ -155,6 +156,7 @@ for comment in subreddit.stream.comments():
                 images = []
                 for file in post:
                     if file.download_file("images/image_{0}_{1}".format(index, number)):
+                        logging.info("Succesfully downloaded image_{0}_{1}, File Size is: {2}KB".format(index, number, int(os.path.getsize("images/image_{0}_{1}.{2}".format(index, number, file.direct_link.split('.')[-1]))) / 1000))
                         try:
                             images.append(mirror_image("images/image_{0}_{1}".format(index, str(number) + '.' + file.direct_link.split('.')[-1]), file.image_name))
                             direct_links.append(file.direct_link)

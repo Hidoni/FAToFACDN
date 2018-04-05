@@ -25,7 +25,7 @@ class post_data:
         log.debug("A post_data class was created with the following values: direct_link:{0}, artist_name:{1}, image_name:{2}, tags:{3}, rating:{4}, sample_url:{5}".format(self.direct_link, self.artist_name, self.image_name, self.tags, self.rating, self.sample_url))
 
     def download_file(self, name):
-        user_agent = "Py621/1.0 (by Hidoni on e621)"
+        user_agent = "Py621/1.1 (by Hidoni on e621)"
         try:
             image = requests.get(self.direct_link, stream=True, headers={'User-Agent': user_agent})
             name = name + '.' + self.direct_link.split('.')[-1]

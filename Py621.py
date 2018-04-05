@@ -2,7 +2,7 @@ import requests
 import json
 from time import sleep # e621 asks that we don't make more than one request a second, So we'll be putting in a sleep command for one second after finishing a request.
 
-userAgent = "Py621/1.0 (by Hidoni on e621)"
+userAgent = "Py621/1.1 (by Hidoni on e621)"
 basicE621Link = "https://e621.net/post/"
 host = "e621.net"
 
