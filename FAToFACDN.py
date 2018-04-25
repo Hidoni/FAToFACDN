@@ -35,7 +35,7 @@ def perform_check():
         if bot_comment.score < 0:
             bot_comment.delete()
             logging.info("Found a comment with a score below 0, It has been deleted")
-            logging.debug("ID was: {0}, Comment Contents were:\n{1}".format(bot_comment.id, bot_comment.body))
+            logging.debug("ID was: {0}, Comment Contents were:\n{1}\n Link for context: https://www.reddit.com{2}?context=5".format(bot_comment.id, bot_comment.body, bot_comment.permalink))
     check = 0
 
 
@@ -81,7 +81,7 @@ for comment in subreddit.stream.comments():
     if check == 10:
         perform_check()
     logging.info("Checking comment with ID: {0}, By: {1}".format(comment.id, comment.author.name))
-    logging.debug("Comment contents are: {0}\nLink is: {1}".format(comment.body, comment.permalink))
+    logging.debug("Comment contents are: {0}\nLink is: https://www.reddit.com{1}?context=5".format(comment.body, comment.permalink))
     comment_body = comment.body.replace("e926.net", "e621.net")
     comment_body = comment_body.replace("full", "view")
     urls_to_mirror = re.findall(r"(furaffinity\.net/view/\d+)", comment_body)  # Match all FurAffinity urls
