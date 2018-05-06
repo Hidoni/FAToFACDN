@@ -12,7 +12,7 @@ class post_data:
         self.direct_link = direct_link
         self.artist_name = artist_name
         self.image_name = "None"
-        self.tags = tags[0:30]
+        self.tags = tags
         if rating == "e":
             self.rating = "Explicit"
         elif rating == "q":

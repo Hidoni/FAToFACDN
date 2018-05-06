@@ -16,10 +16,13 @@ from Inkbunny import get_inkbunny_info
 from imgur import mirror_image
 
 reddit = praw.Reddit('bot')
-subreddit = reddit.subreddit('furry_irl')
+subreddit = reddit.subreddit('u_fatofacdn')
 
 
 def perform_check():
+    """
+    Checks PMs and comment scores and handles them if necessary
+    """
     global check
     logging.info("Checking PMs and Comment Scores")
     for message in reddit.inbox.unread():
@@ -40,25 +43,51 @@ def perform_check():
 
 
 def allowed_to_reply(comment):
-    with open("Blacklist.txt", 'r') as f:
-        file = f.readlines()
-        for name in file:
-            if name == comment.author.name + "\n":
-                return False
-    with open("Repliedto.txt", 'r') as f:
-        file = f.readlines()
-        for id in file:
-            if id == comment.id+"\n":
-                return False
-    return True
+    """
+    Checks whether the bot has replied to the comment before or if the user has blacklisted themselves
+    :param comment: The comment we want to check
+    :return: False if not allowed to reply, True otherwise
+    """
+    return not (comment.author.name + "\n" in open("Blacklist.txt", 'r').read() or comment.id+"\n" in open("Repliedto.txt", 'r'))
 
 
-def souurce_exists(link, original):
+def source_exists(link, original):
+    """
+    Tries to find if the source exists in as many ways as possible
+    :param link: the link we want to check
+    :param original: the original post we're checking in
+    :return: True if source exists, False otherwise
+    """
     return (quote(link, safe="://") in quote(original, safe="://")) or (quote(link, safe="://") in original) or (link in original)  # Just to be safe...
 
 
+def sort_tags(original_tag_order):
+    """
+     Sort all tags in the same way /u/furbot_ does
+    :param original_tag_order: The tags in the order they were extracted in
+    :return: The tag list sorted by priority
+    """
+    new_tag_order = []
+    replace_list = [["ambiguous_gender", "male", "female", "intersex", "cuntboy", "dickgirl", "herm", "maleherm", "manly", "girly", "tomboy"], ["bondage", "domination", "submissive", "sadism", "masochism", "size_play", "hyper", "macro", "micro", "'pok\\xc3\\xa9mon'", "transformation", "cock_transformation", "gender_transformation", "post_transformation", "scat_transformation", "inflation", "belly_expansion", "cum_inflation", "scat_inflation", "vore", "soft_vore", "hard_vore", "absorption_vore", "soul_vore", "anal_vore", "auto_vore", "breast_vore", "nipple_vore", "cock_vore", "oral_vore", "tail_vore", "imminent_vore", "post_vore", "unbirthing", "cannibalism", "vore_sex", "scat", "watersports", "gore", "grotesque_death", "crush", "stomping", "snuff", "necrophilia", "ballbusting", "cock_and_ball_torture", "genital_mutilation", "rape", "abuse", "degradation", "forced", "gang_rape", "mind_break", "public_use", "questionable_consent", "assisted_rape", "oral_rape", "tentacle_rape", "armpit_fetish", "balloon_fetish", "fart_fetish", "foot_fetish", "hoof_fetish", "navel_fetish", "sock_fetish", "what", "why"], ["male/female", "male/male", "female/female", "intersex/male", "cuntboy/male", "dickgirl/male", "herm/male", "maleherm/male", "intersex/female", "cuntboy/female", "dickgirl/female", "herm/female", "maleherm/female", "intersex/intersex", "cuntboy/cuntboy", "dickgirl/cuntboy", "dickgirl/dickgirl", "dickgirl/herm", "herm/cuntboy", "herm/herm", "maleherm/cuntboy", "maleherm/dickgirl", "maleherm/herm", "maleherm/maleherm", "ambiguous/ambiguous", "male/ambiguous", "female/ambiguous", "intersex/ambiguous", "cuntboy/ambiguous", "dickgirl/ambiguous", "herm/ambiguous", "maleherm/ambiguous"], ["feral", "semi-anthro", "humanoid", "human", "taur"], ["penetration", "anal_penetration", "cloacal_penetration", "oral_penetration", "urethral_penetration", "vaginal_penetration", "cervical_penetration", "double_penetration", "double_anal", "double_vaginal", "triple_penetration", "triple_anal", "triple_vaginal", "oral", "cloacalingus", "cunnilingus", "collaborative_cunnilingus", "fellatio", "beakjob", "collaborative_fellatio", "deep_throat", "double_fellatio", "oral_knotting", "rimming", "deep_rimming", "snout_fuck", "sideways_oral", "tonguejob", "licking", "ball_lick", "penis_lick", "oral_masturbation", "autocunnilingus", "autofellatio", "auto_penis_lick", "autorimming", "autotonguejob", "fisting", "anal_fisting", "double_fisting", "urethral_fisting", "vaginal_fisting", "fingering", "anal_fingering", "clitoral_fingering", "cloacal_fingering", "vaginal_fingering", "urethral_fingering", "fingering_self", "fingering_partner", "frottage", "grinding", "hot dogging", "tailjob", "titfuck", "tribadism"], ["69_position", "amazon_position", "anvil_position", "arch_position", "chair_position", "cowgirl_position", "deck_chair_position", "from_behind_position", "leg_glider_position", "lotus_position", "mastery_position", "missionary_position", "piledriver_position", "prison_guard_position", "reverse_cowgirl_position", "reverse_piledriver_position", "reverse_missionary_position", "sandwich_position", "speed_bump_position", "spoon_position", "stand_and_carry_position", "t_square_position", "table_lotus_position", "totem_pole_position", "train_position", "triangle_position", "unusual_position", "wheelbarrow_position", "1691", "ass_to_ass", "daisy_chain", "doggystyle", "mating_press", "mounting", "polesitting", "reverse_spitroast", "spitroast"]]
+    for tag_list in replace_list:
+        for tag in original_tag_order:
+            if tag in tag_list:
+                new_tag_order.append(tag)
+    for tag in original_tag_order:
+        if tag not in new_tag_order:
+            new_tag_order.append(tag)
+    return new_tag_order
+
+
 def tag_formatter(tags):
+    """
+    Formats each tag in the list so that reddit formatting doesn't screw it up
+    :param tags:  The list of tags to format
+    :return: A String of the tags formatted properly
+    """
     formatted = []
+    omitted_tags = len(tags) - 30
+    tags = tags[:30]
     for tag in tags:
         word = ""
         for character in tag:
@@ -66,7 +95,10 @@ def tag_formatter(tags):
                 character = '\\' + character
             word += character
         formatted.append(word)
-    return "^" + ' ^'.join(formatted)
+    return_string = "^" + ' ^'.join(formatted)
+    if omitted_tags > 0:
+        return_string += " ^and ^{0} ^Omitted ^Tags".format(omitted_tags)
+    return return_string
 
 
 check = 0
@@ -106,7 +138,7 @@ for comment in subreddit.stream.comments():
                     logging.info("It's a swf/webm/audio file, Can't mirror")
                     continue
             if not isinstance(link_info, list):
-                if not souurce_exists(link_info.direct_link[8:], comment_body):
+                if not source_exists(link_info.direct_link[8:], comment_body):
                     posts.append(link_info)
                     sample_urls.append(link_info.sample_url)
                 else:
@@ -115,7 +147,7 @@ for comment in subreddit.stream.comments():
                 posts.append(link_info)
         for sample_url in sample_urls:
             if sample_url is not None:
-                if souurce_exists(sample_url[8:], comment_body):
+                if source_exists(sample_url[8:], comment_body):
                     reply += "I've noticed you tried to add a direct link to your post, But you linked a lower resolution one, Please look at [this guide!](https://imgur.com/a/RpklH) to see how to properly add direct links to your post! \n\n"
                     break
         iterator = len(posts)
@@ -146,7 +178,7 @@ for comment in subreddit.stream.comments():
                 if len(post.tags) == 0:
                     reply += "^None"
                 else:
-                    reply += tag_formatter(post.tags)
+                    reply += tag_formatter(sort_tags(post.tags))
                 reply += "\n\n"
                 index += 1
             else:
@@ -156,7 +188,7 @@ for comment in subreddit.stream.comments():
                 images = []
                 for file in post:
                     if file.download_file("images/image_{0}_{1}".format(index, number)):
-                        logging.info("Succesfully downloaded image_{0}_{1}, File Size is: {2}KB".format(index, number, int(os.path.getsize("images/image_{0}_{1}.{2}".format(index, number, file.direct_link.split('.')[-1]))) / 1000))
+                        logging.debug("Succesfully downloaded image_{0}_{1}, File Size is: {2}KB".format(index, number, int(os.path.getsize("images/image_{0}_{1}.{2}".format(index, number, file.direct_link.split('.')[-1]))) / 1000))
                         try:
                             images.append(mirror_image("images/image_{0}_{1}".format(index, str(number) + '.' + file.direct_link.split('.')[-1]), file.image_name))
                             direct_links.append(file.direct_link)
@@ -170,7 +202,7 @@ for comment in subreddit.stream.comments():
                 if len(post[0].tags) == 0:
                     reply += "^None"
                 else:
-                    reply += tag_formatter(post[0].tags)
+                    reply += tag_formatter(sort_tags(post[0].tags))
                 reply += "\n\n"
                 index += 1
         reply += "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist&message=Hi,%20I%20want%20to%20be%20blacklisted) ^^| [^^How ^^to ^^properly ^^give ^^direct ^^links](https://imgur.com/a/RpklH) ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted"

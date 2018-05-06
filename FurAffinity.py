@@ -16,7 +16,7 @@ class post_data:
         self.direct_link = "https://" + direct_link[2:]
         self.artist_name = artist_name
         self.image_name = image_name
-        self.tags = tags[0:30]
+        self.tags = tags
         self.rating = rating
         self.sample_url = sample_url[2:]
         log.debug("A post_data class was created with the following values: direct_link:{0}, artist_name:{1}, image_name:{2}, tags:{3}, rating:{4}".format(self.direct_link, self.artist_name, self.image_name, self.tags, self.rating))
