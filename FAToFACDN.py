@@ -101,6 +101,13 @@ def tag_formatter(tags):
     return return_string
 
 
+def not_duplicate(link_to_check, existing_posts):
+    for post in existing_posts:
+        if post.direct_link == link_to_check:
+            return False
+    return True
+
+
 check = 0
 for comment in subreddit.stream.comments():
     check += 1
@@ -138,7 +145,7 @@ for comment in subreddit.stream.comments():
                     logging.info("It's a swf/webm/audio file, Can't mirror")
                     continue
             if not isinstance(link_info, list):
-                if not source_exists(link_info.direct_link[8:], comment_body):
+                if not source_exists(link_info.direct_link[8:], comment_body) and not_duplicate(link_info.direct_link, posts):
                     posts.append(link_info)
                     sample_urls.append(link_info.sample_url)
                 else:
@@ -150,6 +157,7 @@ for comment in subreddit.stream.comments():
                 if source_exists(sample_url[8:], comment_body):
                     reply += "I've noticed you tried to add a direct link to your post, But you linked a lower resolution one, Please look at [this guide!](https://imgur.com/a/RpklH) to see how to properly add direct links to your post! \n\n"
                     break
+        print(len(posts))
         iterator = len(posts)
         index = 0
         while index < iterator:
@@ -157,7 +165,7 @@ for comment in subreddit.stream.comments():
                 post = posts[index]
                 try:
                     if post.download_file("images/image_{0}".format(index)):
-                        logging.debug("Succesfully downloaded image_{0}, File Size is: {1}KB".format(index, int(os.path.getsize("images/image_{0}.{1}".format(index, post.direct_link.split('.')[-1]))) / 1000))
+                        logging.debug("Successfully downloaded image_{0}, File Size is: {1}KB".format(index, int(os.path.getsize("images/image_{0}.{1}".format(index, post.direct_link.split('.')[-1]))) / 1000))
                         reply += "[Link]({0}) | Image Name: {1} | Artist: {2} | Rating: {4} | [Imgur Mirror]({3})\n\n ^Tags: ".format(post.direct_link, post.image_name, (', '.join(['%s']*len(post.artist_name)) % tuple(post.artist_name)), mirror_image("images/image_{0}".format(str(index) + '.' + post.direct_link.split('.')[-1]), post.image_name), post.rating)
                         try: os.remove("images/image_{0}".format(str(index) + '.' + post.direct_link.split('.')[-1]))
                         except: pass
@@ -188,7 +196,7 @@ for comment in subreddit.stream.comments():
                 images = []
                 for file in post:
                     if file.download_file("images/image_{0}_{1}".format(index, number)):
-                        logging.debug("Succesfully downloaded image_{0}_{1}, File Size is: {2}KB".format(index, number, int(os.path.getsize("images/image_{0}_{1}.{2}".format(index, number, file.direct_link.split('.')[-1]))) / 1000))
+                        logging.debug("Successfully downloaded image_{0}_{1}, File Size is: {2}KB".format(index, number, int(os.path.getsize("images/image_{0}_{1}.{2}".format(index, number, file.direct_link.split('.')[-1]))) / 1000))
                         try:
                             images.append(mirror_image("images/image_{0}_{1}".format(index, str(number) + '.' + file.direct_link.split('.')[-1]), file.image_name))
                             direct_links.append(file.direct_link)
