@@ -157,6 +157,7 @@ for comment in subreddit.stream.comments():
                 if source_exists(sample_url[8:], comment_body):
                     reply += "I've noticed you tried to add a direct link to your post, But you linked a lower resolution one, Please look at [this guide!](https://imgur.com/a/RpklH) to see how to properly add direct links to your post! \n\n"
                     break
+        print(len(posts))
         iterator = len(posts)
         index = 0
         while index < iterator:
