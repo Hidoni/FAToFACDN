@@ -53,8 +53,7 @@ def get_furaffinity_info(furaffinity_link):
             keyword_list.append(a.contents[0])
     image_name = submission_img["alt"]
     art = soup.findAll('a', href=re.compile("^/user/"))
-    art = art[1].contents[0]
-    artist_name = [art]
+    artist_name = re.findall(r"^/user/(\w+)", art[1]['href'])
     if soup.find("img", alt="Adult rating"):
         rating = "Explicit"
     elif soup.find("img", alt="Mature rating"):

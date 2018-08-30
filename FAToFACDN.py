@@ -16,7 +16,7 @@ from Inkbunny import get_inkbunny_info
 from imgur import mirror_image
 
 reddit = praw.Reddit('bot')
-subreddit = reddit.subreddit('u_fatofacdn')
+subreddit = reddit.subreddit('furry_irl')
 
 
 def perform_check():
