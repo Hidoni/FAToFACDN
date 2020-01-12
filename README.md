@@ -1,2 +1,2 @@
 # FAToFACDN
-A Bot that streams comments from /r/furry_irl and provides link mirrors to any FurAffinity/e621 links that don't have one.
+Reddit Bot for /r/furry_irl that mirrors posts from e621, FurAffinity and InkBunny to Imgur.

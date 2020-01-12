@@ -1,0 +1,5 @@
+# Ignore PyCharm files
+.idea/
+# JSON and ini files store sensitive details like login cookies and passwords
+*.json
+*.ini
