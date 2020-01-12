@@ -19,14 +19,14 @@ def create_album(images, name):
 
 def mirror(images, name):
     if isinstance(images, list):
-        logging.info("Mirroring multiple images and creating an album")
+        logger.info("Mirroring multiple images and creating an album")
         uploaded = []
         for image in images:
             uploaded.append(client.upload_image(image, title=name, description="This image is a mirror of a an image linked on a furry_irl post or sent to /u/fatofacdn in dms."))
         deletehashes = [x.deletehash for x in uploaded]
         logging.debug(f"List of deletehashes: {deletehashes}")
         return create_album(deletehashes, name)
-    logging.info("Mirroring a single image")
+    logger.info("Mirroring a single image")
     uploaded = client.upload_image(images, title=name, description="This image is a mirror of a an image linked on a furry_irl post or sent to /u/fatofacdn in dms.")
-    logging.debug(f"Deletehash: {uploaded.deletehash}")
+    logger.debug(f"Deletehash: {uploaded.deletehash}")
     return uploaded.link
