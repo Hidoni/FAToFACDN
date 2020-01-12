@@ -18,6 +18,8 @@ def create_album(images, name):
 
 
 def mirror(images, name):
+    if images is None:
+        raise Exception("Can't mirror none")
     if isinstance(images, list):
         logger.info("Mirroring multiple images and creating an album")
         uploaded = []
