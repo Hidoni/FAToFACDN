@@ -1,0 +1,13 @@
+# Ignore PyCharm files
+.idea/
+# JSON and ini files store sensitive details like login cookies and passwords
+*.json
+*.ini
+# blacklist and read message lists
+blacklist
+replies
+# images folder for mirroing
+images/
+
+__pycache__/
+*.log

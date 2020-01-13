@@ -1,28 +1,34 @@
-from imgurpython import ImgurClient
+import pyimgur
+import requests
 import json
 import logging
-log = logging.getLogger(__name__)
-log.info("imgurMirror.py has set up logging successfully")
 
-# Get the credentials for the imgur account
+logger = logging.getLogger(__name__)
+
 credentials = json.load(open("imgur.json"))
-client_id = credentials["client_id"]
-client_secret = credentials["client_secret"]
-
-client = ImgurClient(client_id, client_secret)
+client = pyimgur.Imgur(credentials['client_id'])
 
 
-def mirror_image(path, name):
-    config = {
-        'album': None,
-        'name': name,
-        'title': name,
-        'description': 'This image is a mirror of a an image linked on a furry_irl post.'
-    }
-    image = None
-    attempts = 0
-    while image is None and attempts < 10: # This should help with random connection drops
-        try: image = client.upload_from_path(path=path, config=config, anon=False)
-        except: attempts += 1
-    log.info("Mirrored the image successfully, Link is {0}".format(image['link']))
-    return image['link']
+def create_album(images, name):
+    payload = [('title', name)]
+    for image in images:
+        payload.append(('deletehashes[]', image))
+    headers = {'Authorization': f"Client-ID {credentials['client_id']}"}
+    return f'https://imgur.com/a/{json.loads(requests.post("https://api.imgur.com/3/album", payload, headers=headers).content)["data"]["id"]}'
+
+
+def mirror(images, name):
+    if images is None:
+        raise Exception("Can't mirror none")
+    if isinstance(images, list):
+        logger.info("Mirroring multiple images and creating an album")
+        uploaded = []
+        for image in images:
+            uploaded.append(client.upload_image(image, title=name, description="This image is a mirror of a an image linked on a furry_irl post or sent to /u/fatofacdn in dms."))
+        deletehashes = [x.deletehash for x in uploaded]
+        logger.debug(f"List of deletehashes: {deletehashes}")
+        return create_album(deletehashes, name)
+    logger.info("Mirroring a single image")
+    uploaded = client.upload_image(images, title=name, description="This image is a mirror of a an image linked on a furry_irl post or sent to /u/fatofacdn in dms.")
+    logger.debug(f"Deletehash: {uploaded.deletehash}")
+    return uploaded.link
