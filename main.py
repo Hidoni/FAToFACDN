@@ -10,6 +10,7 @@ import threading
 import os
 import imgur
 import esixhandler
+import furaffinityhandler
 
 logger = None
 reddit = praw.Reddit('bot')
@@ -47,13 +48,17 @@ def parse(content):
 def convert(urls):
     info = []
     for url in urls:
-        url = "https://www." + url
+        url = "https://www." + url.lower()
         try:
             if "e621" in url:
                 info.append(esixhandler.get(url))
-        except Exception:
+            elif "furaffinity" in url:
+                info.append(furaffinityhandler.get(url))
+        except Exception as e:
+            logging.debug(f"Got Exception {e} when trying to add {url}")
             continue  # Ignore the one that's causing issues.
     return info
+
 
 def sort_tags(tags):
     replace_list = [["ambiguous_gender", "male", "female", "intersex", "andromorph", "gynomorph", "herm", "maleherm", "manly", "girly", "tomboy"], ["bondage", "domination", "submissive", "sadism", "masochism", "size_play", "hyper", "macro", "micro", "'pok\\xc3\\xa9mon'", "transformation", "cock_transformation", "gender_transformation", "post_transformation", "scat_transformation", "inflation", "belly_expansion", "cum_inflation", "scat_inflation", "vore", "soft_vore", "hard_vore", "absorption_vore", "soul_vore", "anal_vore", "auto_vore", "breast_vore", "nipple_vore", "cock_vore", "oral_vore", "tail_vore", "imminent_vore", "post_vore", "unbirthing", "cannibalism", "vore_sex", "scat", "watersports", "gore", "grotesque_death", "crush", "stomping", "snuff", "necrophilia", "ballbusting", "cock_and_ball_torture", "genital_mutilation", "rape", "abuse", "degradation", "forced", "gang_rape", "mind_break", "public_use", "questionable_consent", "assisted_rape", "oral_rape", "tentacle_rape", "armpit_fetish", "balloon_fetish", "fart_fetish", "foot_fetish", "hoof_fetish", "navel_fetish", "sock_fetish", "what", "why"], ["male/female", "male/male", "female/female", "intersex/male", "andromorph/male", "gynomorph/male", "herm/male", "maleherm/male", "intersex/female", "andromorph/female", "gynomorph/female", "herm/female", "maleherm/female", "intersex/intersex", "andromorph/andromorph", "gynomorph/andromorph", "gynomorph/gynomorph", "gynomorph/herm", "herm/andromorph", "herm/herm", "maleherm/andromorph", "maleherm/gynomorph", "maleherm/herm", "maleherm/maleherm", "ambiguous/ambiguous", "male/ambiguous", "female/ambiguous", "intersex/ambiguous", "andromorph/ambiguous", "gynomorph/ambiguous", "herm/ambiguous", "maleherm/ambiguous"], ["feral", "semi-anthro", "humanoid", "human", "taur"], ["penetration", "anal_penetration", "cloacal_penetration", "oral_penetration", "urethral_penetration", "vaginal_penetration", "cervical_penetration", "double_penetration", "double_anal", "double_vaginal", "triple_penetration", "triple_anal", "triple_vaginal", "oral", "cloacalingus", "cunnilingus", "collaborative_cunnilingus", "fellatio", "beakjob", "collaborative_fellatio", "deep_throat", "double_fellatio", "oral_knotting", "rimming", "deep_rimming", "snout_fuck", "sideways_oral", "tonguejob", "licking", "ball_lick", "penis_lick", "oral_masturbation", "autocunnilingus", "autofellatio", "auto_penis_lick", "autorimming", "autotonguejob", "fisting", "anal_fisting", "double_fisting", "urethral_fisting", "vaginal_fisting", "fingering", "anal_fingering", "clitoral_fingering", "cloacal_fingering", "vaginal_fingering", "urethral_fingering", "fingering_self", "fingering_partner", "frottage", "grinding", "hot dogging", "tailjob", "titfuck", "tribadism"], ["69_position", "amazon_position", "anvil_position", "arch_position", "chair_position", "cowgirl_position", "deck_chair_position", "from_behind_position", "leg_glider_position", "lotus_position", "mastery_position", "missionary_position", "piledriver_position", "prison_guard_position", "reverse_cowgirl_position", "reverse_piledriver_position", "reverse_missionary_position", "sandwich_position", "speed_bump_position", "spoon_position", "stand_and_carry_position", "t_square_position", "table_lotus_position", "totem_pole_position", "train_position", "triangle_position", "unusual_position", "wheelbarrow_position", "1691_position", "ass_to_ass", "daisy_chain", "doggystyle", "mating_press", "mounting", "polesitting", "reverse_spitroast", "spitroast"]]
@@ -80,9 +85,9 @@ def format_tags(tags):
 def upload_and_format(post, path):
     if isinstance(post.direct_link, list):
         file_names = post.download(path)
-        return ' | '.join([f'[Link {x + 1}]({post.direct_link[x]})' for x in range(len(post.direct_link))]) + f" | Title: {post.image_name} | Artist/Uploader: {', '.join(post.artist)} | Rating: {post.rating} | [Imgur Mirror]({imgur.mirror(file_names, post.image_name)}) \n\n^Tags: {format_tags(sort_tags(post.tags)) if post.tags else ''}"
+        return ' | '.join([f'[Link {x + 1}]({post.direct_link[x]})' for x in range(len(post.direct_link))]) + f" | Title: {post.image_name} | Artist/Uploader: {', '.join(post.artist)} | Rating: {post.rating} | [Imgur Mirror]({imgur.mirror(file_names, post.image_name)}) \n\n^Tags: {format_tags(sort_tags(post.tags)) if post.tags else ''}\n\n"
     file_name = post.download(path)
-    return f"[Link]({post.direct_link}) | Title: {post.image_name} | Artist/Uploader: {', '.join(post.artist)} | Rating: {post.rating} | [Imgur Mirror]({imgur.mirror(file_name, post.image_name)}) \n\n^Tags: {format_tags(sort_tags(post.tags)) if len(post.tags) > 0 else ''}"
+    return f"[Link]({post.direct_link}) | Title: {post.image_name} | Artist/Uploader: {', '.join(post.artist)} | Rating: {post.rating} | [Imgur Mirror]({imgur.mirror(file_name, post.image_name)}) \n\n^Tags: {format_tags(sort_tags(post.tags)) if len(post.tags) > 0 else ''}\n\n"
 
 
 def handle_inbox():
@@ -99,11 +104,13 @@ def handle_inbox():
                     logger.info(f"Got PM Mirror Request from {mail.author.name}")
                     logger.debug(f"Found the following URLs in DM Request: {urls}")
                     posts = convert(urls)
-                    response = MAIL_START_MESSAGE
-                    for post in posts:
-                        response += upload_and_format(post, f"images/{uuid.uuid4().hex}") + "\n\n"
-                    response += END_MESSAGE
-                    mail.reply(response)
+                    if posts:
+                        response = MAIL_START_MESSAGE
+                        for post in posts:
+                            response += upload_and_format(post, f"images/{uuid.uuid4().hex}")
+                        response += END_MESSAGE
+                        if response != MAIL_START_MESSAGE + END_MESSAGE:
+                            mail.reply(response)
                     logger.info(f"Replied to {mail.author.name}'s DM request.")
                 else:
                     logger.debug(f"Got PM From {mail.author.name}, but it's irrelevant")
@@ -135,13 +142,14 @@ def handle_comments():
                             response += COMMENT_DETECTED_MESSAGE
                             break
                 for post in posts:
-                    response += upload_and_format(post, f"images/{uuid.uuid4().hex}") + "\n\n"
+                    response += upload_and_format(post, f"images/{uuid.uuid4().hex}")
                 response += END_MESSAGE
-                with open("replies", 'a') as f:
-                    f.write(f"{comment.id}\n")
-                comment.reply(response)
-                logger.info(f"Replied to message with ID: {comment.id}")
-                logger.debug(f"Reply was:{response}")
+                if response != COMMENT_START_MESSAGE + END_MESSAGE and response != COMMENT_START_MESSAGE + COMMENT_DETECTED_MESSAGE + END_MESSAGE:
+                    with open("replies", 'a') as f:
+                        f.write(f"{comment.id}\n")
+                    comment.reply(response)
+                    logger.info(f"Replied to message with ID: {comment.id}")
+                    logger.debug(f"Reply was:{response}")
             else:
                 logger.debug("Could not find any valid URLs in comment.")
 
@@ -166,5 +174,6 @@ if __name__ == '__main__':
     timed_thread = threading.Thread(target=handle_timed_actions)
     inbox_thread.start()
     timed_thread.start()
-    handle_comments()
+    # handle_comments()
+    inbox_thread.join()
     exit(-1)  # If we get to this point, we should exit with a bad exit code.

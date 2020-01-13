@@ -22,7 +22,7 @@ class e621Info:
         logger.debug(f"Info class created with the following values: direct_link:{direct_link}, artist_name:{artist}, tags:{tags}, rating:{rating}, sample_url:{sample_url}")
 
     def download(self, path):
-        user_agent = "Py621/1.1 (by Hidoni on e621)"
+        user_agent = "Py621/1.2 (by Hidoni on e621)"
         try:
             image = requests.get(self.direct_link, stream=True, headers={'User-Agent': user_agent})
             name = path + '.' + self.direct_link.split('.')[-1]
