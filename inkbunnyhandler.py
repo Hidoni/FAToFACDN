@@ -66,6 +66,7 @@ def get(link):
             json_result = request_post(re.findall(r"\d+", link)[0])
             submission = json_result["submission"][0]
         else:
+            logger.info("Could Not Mirror, Unknown Error Code.")
             return None
     except:  # No error.
         pass
@@ -74,6 +75,7 @@ def get(link):
     image_name = submission["title"]
     tags = []
     if submission["type_name"] in ["Shockwave/Flash - Interactive", "Video - Feature Length", "Music - Single Track", "Music - Album", "Writing - Document"] or "swf" in submission["file_url_full"] or "mp4" in submission["file_url_full"] or "webm" in submission["file_url_full"]:
+        logger.info(f"Can't mirror post of type {submission['type_name']}")
         return None
     rating = submission["rating_name"]
     for keyword in submission["keywords"]:
@@ -82,4 +84,9 @@ def get(link):
         direct_links.append(image["file_url_full"])
     if len(direct_links) == 1:
         direct_links = direct_links[0]
-    return InkBunnyInfo(direct_links, artist, image_name, tags, rating)
+    try:
+        return InkBunnyInfo(direct_links, artist, image_name, tags, rating)
+    except Exception as e:
+        logger.debug(f"Ran into the following exception when creating an InkBunnyInfo class: {e}")
+        return None
+

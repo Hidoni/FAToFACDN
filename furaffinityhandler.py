@@ -61,4 +61,8 @@ def get(link):
     rating = soup.find('span', class_="rating-box").get_text()
     sample_url = submission_data["data-preview-src"]
     tags = [tag.get_text() for tag in soup.find_all('span', class_="tags")]
-    return FurAffinityData(direct_link, artist, image_name, tags, rating, sample_url)
+    try:
+        return FurAffinityData(direct_link, artist, image_name, tags, rating, sample_url)
+    except Exception as e:
+        logger.debug(f"Ran into the following exception when creating an FurAffinityInfo class: {e}")
+        return None

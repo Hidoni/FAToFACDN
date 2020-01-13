@@ -18,8 +18,11 @@ class e621Info:
             self.rating = RATING_MAP[rating]
         except KeyError:
             self.rating = "Unknown"
-        self.sample_url = sample_url[8:]
-        logger.debug(f"Info class created with the following values: direct_link:{direct_link}, artist_name:{artist}, tags:{tags}, rating:{rating}, sample_url:{sample_url}")
+        if direct_link != sample_url:
+            self.sample_url = direct_link
+        else:
+            self.sample_url = None
+        logger.debug(f"Info class created with the following values: direct_link:{direct_link}, artist_name:{artist}, tags:{tags}, rating:{rating}, sample_url:{self.sample_url}")
 
     def download(self, path):
         user_agent = "Py621/1.2 (by Hidoni on e621)"
@@ -41,8 +44,10 @@ def get(link):
     post_id = re.findall(r"\d+", link)[1]  # e*621*.net/post/*id* which is why we take the second match
     post = py621.get_by_id(post_id)
     if post is None or post.file_ext in ["swf", "webm"]:
+        logger.info("Could not mirror")
         return None
     try:
         return e621Info(post.file_url, post.artist, post.tags, post.rating, post.sample_url)
-    except Exception:
+    except Exception as e:
+        logger.debug(f"Ran into the following exception when creating an e621Info class: {e}")
         return None

@@ -63,7 +63,7 @@ def convert(urls):
         except Exception as e:
             logger.debug(f"Got Exception {e} when trying to add {url}")
             continue  # Ignore the one that's causing issues.
-    return info
+    return [post for post in info if post is not None]
 
 
 def sort_tags(tags):
