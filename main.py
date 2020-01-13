@@ -11,10 +11,14 @@ import os
 import imgur
 import esixhandler
 import furaffinityhandler
+import inkbunnyhandler
 
 logger = None
-reddit = praw.Reddit('bot')
-subreddit = reddit.subreddit("furry_irl")
+# As it turns out, praw is NOT thread safe.
+reddit_inbox = praw.Reddit('bot')
+reddit_comments = praw.Reddit('bot')
+reddit_timed = praw.Reddit('bot')
+subreddit = reddit_comments.subreddit("furry_irl")
 
 ESIX_REGEX = r"(e621\.net/post/show/\d+)"
 FURAFFINITY_REGEX = r"(furaffinity\.net/view/\d+)"
@@ -54,8 +58,10 @@ def convert(urls):
                 info.append(esixhandler.get(url))
             elif "furaffinity" in url:
                 info.append(furaffinityhandler.get(url))
+            else:
+                info.append(inkbunnyhandler.get(url))
         except Exception as e:
-            logging.debug(f"Got Exception {e} when trying to add {url}")
+            logger.debug(f"Got Exception {e} when trying to add {url}")
             continue  # Ignore the one that's causing issues.
     return info
 
@@ -91,7 +97,7 @@ def upload_and_format(post, path):
 
 
 def handle_inbox():
-    for mail in stream_generator(reddit.inbox.unread):
+    for mail in stream_generator(reddit_inbox.inbox.unread):
         if isinstance(mail, Message):
             if mail.subject.lower() == "blacklist":
                 logger.info(f"Found a blacklist request from {mail.author.name}")
@@ -107,7 +113,10 @@ def handle_inbox():
                     if posts:
                         response = MAIL_START_MESSAGE
                         for post in posts:
-                            response += upload_and_format(post, f"images/{uuid.uuid4().hex}")
+                            try:
+                                response += upload_and_format(post, f"images/{uuid.uuid4().hex}")
+                            except Exception:
+                                continue
                         response += END_MESSAGE
                         if response != MAIL_START_MESSAGE + END_MESSAGE:
                             mail.reply(response)
@@ -157,14 +166,17 @@ def handle_comments():
 def handle_timed_actions():
     while True:
         logger.info("Deleting comments which are under a score of 0 and old images.")
-        comments = filter(lambda comment: comment.score < 0, sorted(reddit.user.me().comments.new(limit=None), key=lambda comment: comment.score))
+        comments = filter(lambda comment: comment.score < 0, sorted(reddit_timed.user.me().comments.new(limit=None), key=lambda comment: comment.score))
         for comment in comments:
             logger.debug(f"Deleting comment with a score of {comment.score}\nComment contents are: {comment.body}\nLink is: https://www.reddit.com{comment.permalink}?context=5")
             comment.delete()
         for filename in os.listdir(f"{os.getcwd()}/images/"):
             if filename[-4:] in ['.png', '.jpg', '.gif', '.bmp'] or filename[-5:] in ['.webm']:
                 logger.debug(f"Deleting file: {filename}")
-                os.remove(f"images/{filename}")
+                try:
+                    os.remove(f"images/{filename}")
+                except:
+                    pass
         time.sleep(3600)  # Once an hour, check last 1000 comments for any below a threshold of 0
 
 
@@ -174,6 +186,5 @@ if __name__ == '__main__':
     timed_thread = threading.Thread(target=handle_timed_actions)
     inbox_thread.start()
     timed_thread.start()
-    # handle_comments()
-    inbox_thread.join()
+    handle_comments()
     exit(-1)  # If we get to this point, we should exit with a bad exit code.

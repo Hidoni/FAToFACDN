@@ -44,9 +44,11 @@ class e621Post:
 
 
 def handle_sleep():
+    global last_request
     time_passed = datetime.datetime.now() - last_request
     if time_passed.total_seconds() < 1:
         time.sleep(1 - time_passed.total_seconds())
+    last_request = datetime.datetime.now()
 
 
 def get_page(request_url):
