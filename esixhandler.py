@@ -19,7 +19,7 @@ class e621Info:
         except KeyError:
             self.rating = "Unknown"
         if direct_link != sample_url:
-            self.sample_url = direct_link
+            self.sample_url = sample_url
         else:
             self.sample_url = None
         logger.debug(f"Info class created with the following values: direct_link:{direct_link}, artist_name:{artist}, tags:{tags}, rating:{rating}, sample_url:{self.sample_url}")
