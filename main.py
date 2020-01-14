@@ -150,6 +150,9 @@ def handle_comments():
                         if source_exists(post.sample_url[8:], comment.body):
                             response += COMMENT_DETECTED_MESSAGE
                             break
+                    if source_exists(post.direct_link, comment.body):
+                        posts.remove(post)
+                        continue
                 for post in posts:
                     response += upload_and_format(post, f"images/{uuid.uuid4().hex}")
                 response += END_MESSAGE
