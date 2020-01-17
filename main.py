@@ -145,14 +145,14 @@ def handle_comments():
                 logger.debug(f"Found the following URLs in comment: {urls}")
                 posts = convert(urls)
                 response = COMMENT_START_MESSAGE
-                for post in posts:
-                    if post.sample_url is not None:
+                sample_found = False
+                for post in posts[:]:  # Need to iterate over a copy of the list otherwise list.remove isn't happy.
+                    if post.sample_url is not None and not sample_found:
                         if source_exists(post.sample_url[8:], comment.body):
                             response += COMMENT_DETECTED_MESSAGE
-                            break
+                            sample_found = True
                     if source_exists(post.direct_link, comment.body):
                         posts.remove(post)
-                        continue
                 for post in posts:
                     response += upload_and_format(post, f"images/{uuid.uuid4().hex}")
                 response += END_MESSAGE
