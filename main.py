@@ -29,6 +29,7 @@ COMMENT_START_MESSAGE = "Hewwo, FAToFACDN here! I notice that you've linked imag
 COMMENT_DETECTED_MESSAGE = "I also noticed that you tried to add a direct link, but linked a lower resolution one, Please look at [this guide](https://imgur.com/a/RpklH) to learn how to properly add direct links to your post!\n\n"
 END_MESSAGE = "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist&message=Hi,%20I%20want%20to%20be%20blacklisted) ^^| [^^How ^^to ^^properly ^^give ^^direct ^^links](https://imgur.com/a/RpklH) ^^| ^^Check ^^out ^^my ^^source ^^code ^^on ^^[GitHub](https://github.com/Hidoni/FAToFACDN)! ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted."
 
+shutdown_event = threading.Event()
 
 def setup_logging():
     file = logging.FileHandler("FAToFACDN.log", encoding="utf-8")
@@ -98,6 +99,8 @@ def upload_and_format(post, path):
 
 def handle_inbox():
     for mail in stream_generator(reddit_inbox.inbox.unread):
+        if shutdown_event.is_set():
+            exit(-1)
         if isinstance(mail, Message):
             if mail.subject.lower() == "blacklist":
                 logger.info(f"Found a blacklist request from {mail.author.name}")
@@ -168,6 +171,8 @@ def handle_comments():
 
 def handle_timed_actions():
     while True:
+        if shutdown_event.is_set():
+            exit(-1)
         logger.info("Deleting comments which are under a score of 0 and old images.")
         comments = filter(lambda comment: comment.score < 0, sorted(reddit_timed.user.me().comments.new(limit=None), key=lambda comment: comment.score))
         for comment in comments:
@@ -190,4 +195,5 @@ if __name__ == '__main__':
     inbox_thread.start()
     timed_thread.start()
     handle_comments()
+    shutdown_event.set()
     exit(-1)  # If we get to this point, we should exit with a bad exit code.
