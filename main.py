@@ -99,6 +99,7 @@ def upload_and_format(post, path):
 
 
 def handle_inbox():
+    global exit_flag
     for mail in stream_generator(reddit_inbox.inbox.unread):
         if exit_flag:
             exit(-1)
@@ -171,6 +172,7 @@ def handle_comments():
 
 
 def handle_timed_actions():
+    global exit_flag
     while True:
         if exit_flag:
             exit(-1)
