@@ -100,35 +100,39 @@ def upload_and_format(post, path):
 
 def handle_inbox():
     global exit_flag
-    for mail in stream_generator(reddit_inbox.inbox.unread):
-        if exit_flag:
-            exit(-1)
-        if isinstance(mail, Message):
-            if mail.subject.lower() == "blacklist":
-                logger.info(f"Found a blacklist request from {mail.author.name}")
-                with open("blacklist", 'a') as f:
-                    f.write(mail.author.name + "\n")
-                    logger.debug(f"Added {mail.author.name} to the blacklist.")
-            else:  # Potentially someone wanting to mirror via DMs
-                urls = parse(mail.body)
-                if urls:
-                    logger.info(f"Got PM Mirror Request from {mail.author.name}")
-                    logger.debug(f"Found the following URLs in DM Request: {urls}")
-                    posts = convert(urls)
-                    if posts:
-                        response = MAIL_START_MESSAGE
-                        for post in posts:
-                            try:
-                                response += upload_and_format(post, f"images/{uuid.uuid4().hex}")
-                            except Exception:
-                                continue
-                        response += END_MESSAGE
-                        if response != MAIL_START_MESSAGE + END_MESSAGE:
-                            mail.reply(response)
-                    logger.info(f"Replied to {mail.author.name}'s DM request.")
-                else:
-                    logger.debug(f"Got PM From {mail.author.name}, but it's irrelevant")
-        mail.mark_read()
+    while True:
+        try:
+            for mail in stream_generator(reddit_inbox.inbox.unread):
+                if exit_flag:
+                    exit(-1)
+                if isinstance(mail, Message):
+                    if mail.subject.lower() == "blacklist":
+                        logger.info(f"Found a blacklist request from {mail.author.name}")
+                        with open("blacklist", 'a') as f:
+                            f.write(mail.author.name + "\n")
+                            logger.debug(f"Added {mail.author.name} to the blacklist.")
+                    else:  # Potentially someone wanting to mirror via DMs
+                        urls = parse(mail.body)
+                        if urls:
+                            logger.info(f"Got PM Mirror Request from {mail.author.name}")
+                            logger.debug(f"Found the following URLs in DM Request: {urls}")
+                            posts = convert(urls)
+                            if posts:
+                                response = MAIL_START_MESSAGE
+                                for post in posts:
+                                    try:
+                                        response += upload_and_format(post, f"images/{uuid.uuid4().hex}")
+                                    except Exception:
+                                        continue
+                                response += END_MESSAGE
+                                if response != MAIL_START_MESSAGE + END_MESSAGE:
+                                    mail.reply(response)
+                            logger.info(f"Replied to {mail.author.name}'s DM request.")
+                        else:
+                            logger.debug(f"Got PM From {mail.author.name}, but it's irrelevant")
+                mail.mark_read()
+        except:
+            pass
 
 
 def can_reply(comment):
@@ -204,6 +208,10 @@ if __name__ == '__main__':
     timed_thread = threading.Thread(target=handle_timed_actions)
     inbox_thread.start()
     timed_thread.start()
-    handle_comments()
+    while True:
+        try:
+            handle_comments()
+        except:
+            pass
     exit_flag = True
     exit(-1)  # If we get to this point, we should exit with a bad exit code.
