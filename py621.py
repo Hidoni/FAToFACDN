@@ -3,10 +3,11 @@ import json
 import time
 import datetime
 
-user_agent = "Py621/1.2 (by Hidoni on e621)"
+user_agent = "Py621/1.3 (by Hidoni on e621)"
 last_request = datetime.datetime.min
 base_link = "https://e621.net/post/"
 host = "e621.net"
+credentials = json.load(open("621.json"))
 
 
 class e621Post:
@@ -53,9 +54,26 @@ def handle_sleep():
 
 def get_page(request_url):
     handle_sleep()
-    return requests.get(request_url, headers={'User-Agent': user_agent})
+    return requests.get(request_url, headers={'User-Agent': user_agent, 'Authorization': credentials['auth']})
 
 
+def get_by_id(id):
+    req = get_page("https://e621.net/posts/{0}.json".format(id))
+    post = json.loads(req.content.decode())["post"]
+    if post["flags"]["deleted"]:
+        return None
+    tags = post["tags"]["general"] + post["tags"]["species"] + post["tags"]["lore"] + post["tags"]["character"] + post["tags"]["copyright"] + post["tags"]["invalid"] + post["tags"]["meta"]
+    return e621Post(id=post['id'], tags=tags, description=post['description'], created_at=post["created_at"],
+                    creator_id=["uploader_id"], author=None, source=post["sources"], score=post["score"]["total"],
+                    fav_count=post["fav_count"], md5=post['file']["md5"], file_size=post['file']['size'], file_url=post['file']['url'],
+                    file_ext=post['file']['ext'], preview_url=post['preview']['url'], preview_width=post['preview']['width'],
+                    preview_height=post['preview']['height'], sample_url=post['sample']['url'], sample_width=post['sample']['width'],
+                    sample_height=post['sample']['height'], rating=post['rating'], status=None, width=post['file']['width'], height=post['file']['height'],
+                    has_notes=None, has_children=post['relationships']['has_children'], children=post['relationships']['children'],
+                    parent_id=post['relationships']['parent_id'], artist=post['tags']['artist'])
+
+
+"""
 def get_top_of_week():
     posts = []
     req = get_page("https://e621.net/post/popular_by_week.json")
@@ -146,3 +164,4 @@ def get_by_id(id):
                          has_children=post['has_children'], children=post['children'], parent_id=post['parent_id'],
                          artist=post['artist']))
     return data
+"""
