@@ -21,6 +21,7 @@ reddit_timed = praw.Reddit('bot')
 subreddit = reddit_comments.subreddit("furry_irl")
 
 ESIX_REGEX = r"(e621\.net/post/show/\d+)"
+UPDATED_ESIX_REGEX = r"(e621\.net/posts/show/\d+)"
 FURAFFINITY_REGEX = r"(furaffinity\.net/view/\d+)"
 INKBUNNY_REGEX = r"(inkbunny\.net/s/\d+)"
 
@@ -46,6 +47,7 @@ def parse(content):
     content = content.replace("e926.net", "e621.net")
     content = content.replace("full", "view")
     matches = re.findall(ESIX_REGEX, content)
+    matches += re.findall(UPDATED_ESIX_REGEX, content)
     matches += re.findall(FURAFFINITY_REGEX, content)
     matches += re.findall(INKBUNNY_REGEX, content)
     return list(dict.fromkeys(matches))  # Remove duplicate matches
