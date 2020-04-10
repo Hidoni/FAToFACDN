@@ -21,7 +21,7 @@ reddit_timed = praw.Reddit('bot')
 subreddit = reddit_comments.subreddit("furry_irl")
 
 ESIX_REGEX = r"(e621\.net/post/show/\d+)"
-UPDATED_ESIX_REGEX = r"(e621\.net/posts/show/\d+)"
+UPDATED_ESIX_REGEX = r"(e621\.net/posts/\d+)"
 FURAFFINITY_REGEX = r"(furaffinity\.net/view/\d+)"
 INKBUNNY_REGEX = r"(inkbunny\.net/s/\d+)"
 
