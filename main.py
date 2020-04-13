@@ -95,9 +95,9 @@ def format_tags(tags):
 def upload_and_format(post, path):
     if isinstance(post.direct_link, list):
         file_names = post.download(path)
-        return ' | '.join([f'[Link {x + 1}]({post.direct_link[x]})' for x in range(len(post.direct_link))]) + f" | Title: {post.image_name} | Artist/Uploader: {', '.join(post.artist)} | Rating: {post.rating} | [Imgur Mirror]({imgur.mirror(file_names, post.image_name)}) \n\n^Tags: {format_tags(sort_tags(post.tags)) if post.tags else ''}\n\n"
+        return ' | '.join([f'[Link {x + 1}]({post.direct_link[x]})' for x in range(len(post.direct_link))]) + f" | Title: {post.image_name} | Artist/Uploader: {', '.join(post.artist)} | Rating: {post.rating} | [Imgur Mirror]({imgur.mirror(file_names, post.image_name)}) \n\n^Tags: {format_tags(sort_tags(post.tags)) if post.tags else '^None!'}\n\n"
     file_name = post.download(path)
-    return f"[Link]({post.direct_link}) | Title: {post.image_name} | Artist/Uploader: {', '.join(post.artist)} | Rating: {post.rating} | [Imgur Mirror]({imgur.mirror(file_name, post.image_name)}) \n\n^Tags: {format_tags(sort_tags(post.tags)) if len(post.tags) > 0 else ''}\n\n"
+    return f"[Link]({post.direct_link}) | Title: {post.image_name} | Artist/Uploader: {', '.join(post.artist)} | Rating: {post.rating} | [Imgur Mirror]({imgur.mirror(file_name, post.image_name)}) \n\n^Tags: {format_tags(sort_tags(post.tags)) if len(post.tags) > 0 else '^None!'}\n\n"
 
 
 def handle_inbox():
