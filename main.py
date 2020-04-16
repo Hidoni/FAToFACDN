@@ -2,6 +2,7 @@ import praw
 from praw.models.util import stream_generator
 from praw.models import Message
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import re
 import uuid
 from urllib.parse import quote
@@ -34,7 +35,7 @@ exit_flag = False
 
 
 def setup_logging():
-    file = logging.FileHandler("FAToFACDN.log", encoding="utf-8")
+    file = TimedRotatingFileHandler("logs/FAToFACDN.log", when='midnight', encoding="utf-8")
     console = logging.StreamHandler()
     console.setLevel("INFO")
     logging.basicConfig(format="{asctime:s} {name:s}:{levelname:s} {message:s}", style='{', handlers=[file, console], level=logging.DEBUG)
