@@ -29,7 +29,7 @@ INKBUNNY_REGEX = r"(inkbunny\.net/s/\d+)"
 MAIL_START_MESSAGE = "OwO, what's this? You want me to mirror these links for you? Here you go!\n\n"
 COMMENT_START_MESSAGE = "Hewwo, FAToFACDN here! I notice that you've linked images from e621/FurAffinity/Inkbunny without full quality direct links, I'm here to provide them!\n\n"
 COMMENT_DETECTED_MESSAGE = "I also noticed that you tried to add a direct link, but linked a lower resolution one, Please look at [this guide](https://imgur.com/a/RpklH) to learn how to properly add direct links to your post!\n\n"
-END_MESSAGE = "***\n^^Bot ^^Created ^^By ^^Hidoni, ^^Have ^^I ^^made ^^an ^^error? [^^Message ^^creator](https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error) ^^| [^^Blacklist ^^yourself](https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist&message=Hi,%20I%20want%20to%20be%20blacklisted) ^^| [^^How ^^to ^^properly ^^give ^^direct ^^links](https://imgur.com/a/RpklH) ^^| ^^Check ^^out ^^my ^^source ^^code ^^on ^^[GitHub](https://github.com/Hidoni/FAToFACDN)! ^^| ^^If ^^this ^^comment ^^goes ^^below ^^0 ^^karma, ^^It ^^will ^^be ^^deleted."
+END_MESSAGE = "***\n^(Bot Created By Hidoni, Have I made an error? [Message creator][bot_error] | [Blacklist yourself][blacklist] | [How to properly give direct links][help] | Check out my source code on [GitHub][github]! | If this comment goes below 0 karma, It will be deleted.)\n\n[bot_error]: https://www.reddit.com/message/compose/?to=Hidoni&subject=Bot%20Error\n[blacklist]: https://www.reddit.com/message/compose/?to=FAToFacdn&subject=Blacklist&message=Hi,%20I%20want%20to%20be%20blacklisted\n[help]: https://imgur.com/a/RpklH\n[github]: https://github.com/Hidoni/FAToFACDN"
 
 exit_flag = False
 
